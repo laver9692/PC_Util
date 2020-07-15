@@ -6,7 +6,7 @@
 #include "Engine/LevelStreaming.h"
 #include "Engine/World.h"
 #include "Engine/AssetManager.h"
-
+#include "LevelTransitionDrawer.h"
 
 ALevelManager* ALevelManager::m_instance = nullptr;
 const FName ALevelManager::ON_LOADED_FUNC_NAME = FName("OnLevelLoaded");
@@ -34,14 +34,73 @@ ALevelManager::ALevelManager()
 	AddToRoot();
 }
 
-void ALevelManager::ChangeLevel(const FName levelName, const bool isShowOnLoaded)
+ALevelManager::~ALevelManager()
 {
+	if (m_instance == this)m_instance = nullptr;
+}
+
+void ALevelManager::ChangeLevel(const FName levelName)
+{
+	m_isShowOnLoaded = true;
+	//読み込むレベル名の設定
 	m_levelId.PrimaryAssetName = levelName;
-	m_isShowOnLoaded = isShowOnLoaded;
+	//LoadLevel(levelName);
+}
+
+void ALevelManager::ChangeLevel(UObject* target, const FName levelName)
+{
+	targetPtr = target;
+	ChangeLevel(levelName);
+}
+
+void ALevelManager::ChangeLevel(UObject* target, const ELevelType levelType)
+{
+	Init();
+	ChangeLevel(target, LevelNamesMap[levelType]);
+}
+
+void ALevelManager::OnLevelLoaded()
+{
+	m_isLoadingLevel = false;
+	if (m_isShowOnLoaded) {
+		ShowLevel();
+		m_isShowOnLoaded = false;
+	}
+}
+void ALevelManager::LevelChanged(const FName newLevelName)
+{
+	m_currentLevelName = newLevelName;
+}
+
+void ALevelManager::ShowLevel(UObject* target)
+{
+	if (target != nullptr) {
+		targetPtr = target;
+	}
+
+	if (m_streamableHandle) {
+		if (m_streamableHandle->IsLoadingInProgress())return;
+		auto asset = m_streamableHandle->GetLoadedAsset();
+		if (asset == nullptr)return;
+
+		m_loadingLevelName = asset->GetFName();
+	}
+	if (targetPtr == nullptr)return;
+	//thisでOpenLevelすると、なぜか遷移してくれなかったので、暫定対応として、適当なオブジェクトを使用
+	//LevelManagerがSingletonであることとかかわりがある可能性あり
+	UGameplayStatics::OpenLevel(targetPtr, m_loadingLevelName);
+	LevelChanged(m_loadingLevelName);
+}
+
+void ALevelManager::LoadLevel(const FName levelName)
+{
+	//読み込んでいるレベルの保存(一応)
 	m_loadingLevelName = levelName;
+	//今読込中であるというフラグ（一応）
 	m_isLoadingLevel = true;
 
 	auto sptr = UAssetManager::Get().LoadPrimaryAsset(m_levelId, TArray<FName>(), m_onLevelLoadedDelegate);
+	//実際に読み込みが発生しない（既に読み込まれている）場合、この下よりも、登録しているイベントが先に呼ばれるので、注意が必要
 	if (sptr) {
 		m_streamableHandle = sptr.Get();
 	}
@@ -49,41 +108,6 @@ void ALevelManager::ChangeLevel(const FName levelName, const bool isShowOnLoaded
 	{
 		m_streamableHandle = nullptr;
 	}
-}
-
-void ALevelManager::ChangeLevel(UObject* target, const FName levelName, const bool isShowOnLoaded)
-{
-	targetPtr = target;
-	ChangeLevel(levelName, isShowOnLoaded);
-}
-
-void ALevelManager::ChangeLevel(UObject* target, const ELevelType levelType, const bool isShowOnLoaded)
-{
-	ChangeLevel(target, LevelNamesMap[levelType], isShowOnLoaded);
-}
-
-void ALevelManager::OnLevelLoaded()
-{
-	m_isLoadingLevel = false;
-	if (m_isShowOnLoaded)ShowLevel();
-}
-void ALevelManager::LevelChanged(const FName newLevelName)
-{
-	m_currentLevelName = newLevelName;
-}
-
-void ALevelManager::ShowLevel()
-{
-	if (m_streamableHandle) {
-		if (m_streamableHandle->IsLoadingInProgress())return;
-		auto asset = m_streamableHandle->GetLoadedAsset();
-		if (asset == nullptr)return;
-		
-		m_loadingLevelName = asset->GetFName();
-	}
-	if (targetPtr == nullptr)return;
-	UGameplayStatics::OpenLevel(targetPtr, m_loadingLevelName);
-	LevelChanged(m_loadingLevelName);
 }
 
 ALevelManager* ALevelManager::GetInstance()
@@ -95,10 +119,47 @@ ALevelManager* ALevelManager::GetInstance()
 }
 
 // Called when the game starts or when spawned
+//呼ばれない。シングルトン関係ある？
 void ALevelManager::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ALevelManager::OnFadedIn()
+{
+	onLevelChanged.Broadcast(m_currentLevelName);
+}
+
+void ALevelManager::OnFadedOut()
+{
+	LoadLevel();
+}
+
+void ALevelManager::CreateDrawer()
+{
+	auto pCon = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	auto subClass = TSubclassOf<ULevelTransitionDrawer>();
+	auto widgetName = FName("LevelTransitionDrawer");
+	//m_drawer = CreateDefaultSubobject<ULevelTransitionDrawer>(TEXT("Drawer"));
+	//上手くCreateできない
+	m_drawer = Cast<ULevelTransitionDrawer>(ULevelTransitionDrawer::CreateWidgetInstance(*pCon, subClass, widgetName));
+	//m_drawer = Cast<ULevelTransitionDrawer>(ULevelTransitionDrawer::CreateWidgetInstance(*pCon, subClass, widgetName));
+	check(m_drawer != nullptr);
+	//Eventの登録
+	m_drawer->onFadedIn.AddLambda([&] { OnFadedIn(); });
+	m_drawer->onFadedOut.AddLambda([&] { OnFadedOut(); });
+
+	m_drawer->AddToViewport(INT32_MAX);
+}
+
+void ALevelManager::Init()
+{
+	if (m_isInit)return;
 	m_currentLevelName = FName(UGameplayStatics::GetCurrentLevelName(this));
+	if (m_drawer == nullptr) {
+		CreateDrawer();
+	}
+	m_isInit = true;
 }
 
 // Called every frame

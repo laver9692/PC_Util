@@ -33,16 +33,16 @@ void ATestActor::Tick(float DeltaTime)
 	auto pCon = UGameplayStatics::GetPlayerController(this, 0);
 	//auto isKey = 0 < UGameplayStatics::GetPlayerController(this, 0)->GetInputAnalogKeyState(FKey::FKey("1"));
 	if (pCon->IsInputKeyDown(EKeys::One)) {
-		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA, false);
-		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA, true);
+		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA);
+		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA);
 	}
 	else if (pCon->IsInputKeyDown(EKeys::Two)) {
-		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB, false);
-		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB, true);
+		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB);
+		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB);
 	}
 	else if (pCon->IsInputKeyDown(EKeys::Three)) {
-		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC, false);
-		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC, true);
+		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC);
+		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC);
 	}
 	else if (pCon->IsInputKeyDown(EKeys::Z)) {
 		ALevelManager::GetInstance()->ShowLevel();

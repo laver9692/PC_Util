@@ -8,7 +8,7 @@
 #include "Engine/StreamableManager.h"
 #include "LevelManager.generated.h"
 
-
+//ChangeLevel->FadeOut->OnFadedOut(Event)->LoadLevel->Load中はUpdateProgress->OnLoadedLevel(Event)->OpenLevel->FadeIn->OnFadedIn(Event)->OnLevelChanged(Event)
 UENUM(BlueprintType)
 enum class ELevelType : uint8
 {
@@ -17,7 +17,7 @@ enum class ELevelType : uint8
 	LevelC
 };
 
-DECLARE_DELEGATE_OneParam(LevelEvent, FName);
+DECLARE_MULTICAST_DELEGATE_OneParam(LevelEvent, FName);
 /// <summary>
 /// Levelの遷移用
 /// 参考
@@ -34,6 +34,7 @@ class PC_UTIL_API ALevelManager : public AActor
 
 private:
 	ALevelManager();
+	~ALevelManager();
 protected:
 	static ALevelManager* m_instance;
 public:
@@ -48,11 +49,11 @@ public:
 	/// <summary>
 	/// レベルの変更、読込を行い、終わり次第、指定のレベルに遷移する。
 	/// </summary>
-	/// <param name="levelName">遷移するレベル名</param>
-	/// <param name="isDrawOnLoaded">読込が完了し次第新しいレベルを表示するか</param>
-	void ChangeLevel(const FName levelName, const bool isShowOnLoaded = false);
-	void ChangeLevel(UObject* target, const FName levelName, const bool isShowOnLoaded = false);
-	void ChangeLevel(UObject* target, const ELevelType levelType, const bool isShowOnLoaded = false);
+	/// <param name="target">レベル遷移に使うUObject</param>
+	/// <param name="levelType">遷移するレベル(暫定対応)</param>
+	void ChangeLevel(UObject* target, const ELevelType levelType);
+	void ChangeLevel(UObject* target, const FName levelName);
+	void ChangeLevel(const FName levelName);
 
 	/// <summary>
 	/// レベル変更時
@@ -62,18 +63,24 @@ public:
 	/// <summary>
 	/// レベルの表示
 	/// </summary>
-	/// <param name="newLevelName"></param>
-	void ShowLevel();
+	/// <param name="target"></param>
+	void ShowLevel(UObject* target = nullptr);
+
+	/// <summary>
+	/// レベルの読み込み
+	/// </summary>
+	/// <param name="levelName">読み込むレベル名(値がデフォルトなら既に設定されている名前で読み込む)</param>
+	void LoadLevel(const FName levelName = DEFAULT_FNAME);
 
 	/// <summary>
 	/// レベル読込完了時のイベント
 	/// </summary>
-	LevelEvent onLevelChanged;
+	LevelEvent onLevelChanged = LevelEvent();
 
 	/// <summary>
 	/// レベル表示時のイベント
 	/// </summary>
-	LevelEvent onLevelShowed;
+	LevelEvent onLevelShowed = LevelEvent();
 
 	UFUNCTION(BlueprintCallable)
 		/// <summary>
@@ -89,6 +96,13 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void OnFadedIn();
+	void OnFadedOut();
+
+	void CreateDrawer();
+
+	void Init();
 
 	/// <summary>
 	/// レベルの読み込み時に使うやつ
@@ -120,6 +134,10 @@ protected:
 	/// レベルの読み込みを同期処理で行うか
 	/// </summary>
 	bool m_isLoadSync = false;
+
+	bool m_isInit = false;
+	UPROPERTY()
+		class ULevelTransitionDrawer* m_drawer;
 
 	//UAsyncActionLoadPrimaryAsset* m_loadingAsset;
 	FStreamableHandle* m_streamableHandle;
