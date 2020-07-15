@@ -8,6 +8,15 @@
 #include "Engine/StreamableManager.h"
 #include "LevelManager.generated.h"
 
+
+UENUM(BlueprintType)
+enum class ELevelType : uint8
+{
+	LevelA,
+	LevelB,
+	LevelC
+};
+
 DECLARE_DELEGATE_OneParam(LevelEvent, FName);
 /// <summary>
 /// Levelの遷移用
@@ -21,6 +30,7 @@ class PC_UTIL_API ALevelManager : public AActor
 
 		static const FName ON_LOADED_FUNC_NAME;
 	static const FName DEFAULT_FNAME;
+	static const TMap<ELevelType, FName> LevelNamesMap;
 
 private:
 	ALevelManager();
@@ -42,6 +52,7 @@ public:
 	/// <param name="isDrawOnLoaded">読込が完了し次第新しいレベルを表示するか</param>
 	void ChangeLevel(const FName levelName, const bool isShowOnLoaded = false);
 	void ChangeLevel(UObject* target, const FName levelName, const bool isShowOnLoaded = false);
+	void ChangeLevel(UObject* target, const ELevelType levelType, const bool isShowOnLoaded = false);
 
 	/// <summary>
 	/// レベル変更時
@@ -53,8 +64,6 @@ public:
 	/// </summary>
 	/// <param name="newLevelName"></param>
 	void ShowLevel();
-	void ShowLevel(const FName newLevelName);
-	void ShowLevel(const ULevelStreaming* newLevel);
 
 	/// <summary>
 	/// レベル読込完了時のイベント
@@ -84,7 +93,7 @@ protected:
 	/// <summary>
 	/// レベルの読み込み時に使うやつ
 	/// </summary>
-	FLatentActionInfo m_latentActionInfo;
+	//FLatentActionInfo m_latentActionInfo;
 	FPrimaryAssetId m_levelId;
 
 	/// <summary>

@@ -30,33 +30,22 @@ void ATestActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (isPressed)return;
-	auto isKey = 0 < UGameplayStatics::GetPlayerController(this, 0)->GetInputAnalogKeyState(FKey::FKey("Z"));
-	if (isKey && !isLoading) {
-		//m_latentActionInfo.UUID = m_latentActionInfo.UUID + 1;
-		//m_latentActionInfo.CallbackTarget = this;
-		//m_latentActionInfo.ExecutionFunction = FName("OnLoaded");
-		//UGameplayStatics::LoadStreamLevel(this, FName("/Game/StarterContent/Maps/Minimal_Default"), true, false, m_latentActionInfo);
-		//ALevelManager::GetInstance()->ChangeLevel(FName("/Game/StarterContent/Maps/StarterMap"), true);
-		//auto levelStream = UGameplayStatics::GetStreamingLevel(GetWorld(), FName("/Game/StarterContent/Maps/Minimal_Default"));
-		//auto i = 0;
-		//if (levelStream) {
-		//	i = 1;
-		//}
-		//else
-		//{
-		//	i = 2;
-		//}
-		//ALevelManager::GetInstance()->ChangeLevel(FName("Minimal_Default"), true);
-		ALevelManager::GetInstance()->ChangeLevel(this, FName("/Game/StarterContent/Maps/Minimal_Default"), true);
-		//UGameplayStatics::OpenLevel(this, FName("/Game/StarterContent/Maps/Minimal_Default"));
-		//isLoading = true;
-		//isPressed = true;
+	auto pCon = UGameplayStatics::GetPlayerController(this, 0);
+	//auto isKey = 0 < UGameplayStatics::GetPlayerController(this, 0)->GetInputAnalogKeyState(FKey::FKey("1"));
+	if (pCon->IsInputKeyDown(EKeys::One)) {
+		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA, false);
+		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA, true);
 	}
-	//if (!isLoaded)return;
-	//isKey = 0 < UGameplayStatics::GetPlayerController(this, 0)->GetInputAnalogKeyState(FKey::FKey("X"));
-	//if (isKey) {
-	//	UGameplayStatics::OpenLevel(this, FName("/Game/StarterContent/Maps/Minimal_Default"));
-	//	isPressed = true;
-	//}
+	else if (pCon->IsInputKeyDown(EKeys::Two)) {
+		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB, false);
+		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB, true);
+	}
+	else if (pCon->IsInputKeyDown(EKeys::Three)) {
+		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC, false);
+		//ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC, true);
+	}
+	else if (pCon->IsInputKeyDown(EKeys::Z)) {
+		ALevelManager::GetInstance()->ShowLevel();
+	}
 }
 

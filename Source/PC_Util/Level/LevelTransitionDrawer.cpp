@@ -3,3 +3,6 @@
 
 #include "LevelTransitionDrawer.h"
 
+void ULevelTransitionDrawer::NativeConstruct() {
+	levelManager = ALevelManager::GetInstance();
+}
