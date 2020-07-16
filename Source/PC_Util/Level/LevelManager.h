@@ -20,8 +20,6 @@ enum class ELevelType : uint8
 DECLARE_MULTICAST_DELEGATE_OneParam(LevelEvent, FName);
 /// <summary>
 /// Level‚Ì‘JˆÚ—p
-/// Ql
-/// https://hexadrive.jp/hexablog/program/41346/
 /// </summary>
 UCLASS()
 class PC_UTIL_API ALevelManager : public AActor
