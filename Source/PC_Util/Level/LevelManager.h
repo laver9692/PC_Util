@@ -101,6 +101,7 @@ protected:
 	void OnFadedOut();
 
 	void CreateDrawer();
+	//void CreateDrawer();
 
 	void Init();
 
@@ -138,7 +139,7 @@ protected:
 	bool m_isInit = false;
 	UPROPERTY()
 		class ULevelTransitionDrawer* m_drawer;
-
+	TSubclassOf<class ULevelTransitionDrawer>WidgetClass = nullptr;
 	//UAsyncActionLoadPrimaryAsset* m_loadingAsset;
 	FStreamableHandle* m_streamableHandle;
 	FStreamableDelegate m_onLevelLoadedDelegate;

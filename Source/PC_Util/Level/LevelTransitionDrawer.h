@@ -22,7 +22,10 @@ public:
 	//FadeOut->FadedOut(Event)->LoadLevel->UpdateProgress->LoadedLevel(Event)->OpenLevel->ChengedLevel->FadeIn->FadedIn(Event)
 	ULevelTransitionDrawer(const class FObjectInitializer& ObjectInitializer);
 	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	UFUNCTION(BlueprintCallable)
+		virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	FadeEvent onFadedIn = FadeEvent();
 	FadeEvent onFadedOut = FadeEvent();
 
@@ -37,11 +40,9 @@ public:
 	/// </summary>
 	/// <param name="fadeTime">フェードにかける時間</param>
 	void FadeOut(float fadeTime);
-	UFUNCTION(BluePrintCallable)
-		void SetWidgets(UImage* image, UProgressBar* bar) {
-		m_fadeImage = image;
-		m_progressBar = bar;
-	}
+	UFUNCTION(BlueprintNativeEvent)
+		void SetWidgets();
+	virtual void SetWidgets_Implementation();
 
 	/// <summary>
 	/// 進捗の設定
@@ -50,23 +51,17 @@ public:
 	void SetProgress(float progress);
 
 protected:
-	UPROPERTY(BlueprintReadOnly)
-		ALevelManager* levelManager = nullptr;
+	float m_fadeTime = -1;
 
-	UPROPERTY(BlueprintReadOnly)
-		float m_fadeTime = -1;
+	void OnFadedIn();
 
-	UFUNCTION(BlueprintCallable)
-		void OnFadedIn();
-
-	UFUNCTION(BlueprintCallable)
-		void OnFadedOut();
+	void OnFadedOut();
 
 	bool m_isFading = false;
 	bool m_isLoading = false;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		UImage* m_fadeImage;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		UProgressBar* m_progressBar;
 };

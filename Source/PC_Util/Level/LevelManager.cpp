@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "Engine/AssetManager.h"
 #include "LevelTransitionDrawer.h"
+#include "UObject/ConstructorHelpers.h"
 
 ALevelManager* ALevelManager::m_instance = nullptr;
 const FName ALevelManager::ON_LOADED_FUNC_NAME = FName("OnLevelLoaded");
@@ -16,6 +17,7 @@ const TMap<ELevelType, FName> ALevelManager::LevelNamesMap = {
 	{ ELevelType::LevelB, FName("/Game/StarterContent/Maps/Minimal_Default") },
 	{ ELevelType::LevelC, FName("/Game/StarterContent/Maps/Advanced_Lighting") }
 };
+
 // Sets default values
 ALevelManager::ALevelManager()
 {
@@ -31,7 +33,19 @@ ALevelManager::ALevelManager()
 	m_levelId.PrimaryAssetType = FPrimaryAssetType::FPrimaryAssetType("Map");
 
 	m_onLevelLoadedDelegate.BindUFunction(this, ON_LOADED_FUNC_NAME);
+
+	WidgetClass = ConstructorHelpers::FClassFinder<ULevelTransitionDrawer>(TEXT("/Game/LevelManager/LevelDrawer")).Class;
+
 	AddToRoot();
+
+	//これでTickが呼ばれるようになるかと思えばそうでもなかった
+	//PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.TickInterval = 0;
+	//PrimaryActorTick.TickGroup = ETickingGroup::TG_DuringPhysics;
+	//PrimaryActorTick.Target = this;
+	//bAllowTickBeforeBeginPlay = true;
+	//SetActorTickEnabled(true);
+	//RegisterAllActorTickFunctions(true, false);
 }
 
 ALevelManager::~ALevelManager()
@@ -45,6 +59,7 @@ void ALevelManager::ChangeLevel(const FName levelName)
 	//読み込むレベル名の設定
 	m_levelId.PrimaryAssetName = levelName;
 	//LoadLevel(levelName);
+	m_drawer->FadeOut(1);
 }
 
 void ALevelManager::ChangeLevel(UObject* target, const FName levelName)
@@ -55,6 +70,8 @@ void ALevelManager::ChangeLevel(UObject* target, const FName levelName)
 
 void ALevelManager::ChangeLevel(UObject* target, const ELevelType levelType)
 {
+	//後で消すかも
+	targetPtr = target;
 	Init();
 	ChangeLevel(target, LevelNamesMap[levelType]);
 }
@@ -62,6 +79,7 @@ void ALevelManager::ChangeLevel(UObject* target, const ELevelType levelType)
 void ALevelManager::OnLevelLoaded()
 {
 	m_isLoadingLevel = false;
+	m_drawer->SetProgress(1);
 	if (m_isShowOnLoaded) {
 		ShowLevel();
 		m_isShowOnLoaded = false;
@@ -122,7 +140,7 @@ ALevelManager* ALevelManager::GetInstance()
 //呼ばれない。シングルトン関係ある？
 void ALevelManager::BeginPlay()
 {
-	Super::BeginPlay();
+	//Super::BeginPlay();
 }
 
 void ALevelManager::OnFadedIn()
@@ -137,13 +155,10 @@ void ALevelManager::OnFadedOut()
 
 void ALevelManager::CreateDrawer()
 {
-	auto pCon = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	auto subClass = TSubclassOf<ULevelTransitionDrawer>();
+	auto gameInstance = UGameplayStatics::GetGameInstance(targetPtr);
 	auto widgetName = FName("LevelTransitionDrawer");
-	//m_drawer = CreateDefaultSubobject<ULevelTransitionDrawer>(TEXT("Drawer"));
-	//上手くCreateできない
-	m_drawer = Cast<ULevelTransitionDrawer>(ULevelTransitionDrawer::CreateWidgetInstance(*pCon, subClass, widgetName));
-	//m_drawer = Cast<ULevelTransitionDrawer>(ULevelTransitionDrawer::CreateWidgetInstance(*pCon, subClass, widgetName));
+	check(gameInstance != nullptr);
+	m_drawer = CreateWidget<ULevelTransitionDrawer>(gameInstance, WidgetClass, widgetName);
 	check(m_drawer != nullptr);
 	//Eventの登録
 	m_drawer->onFadedIn.AddLambda([&] { OnFadedIn(); });
@@ -163,11 +178,13 @@ void ALevelManager::Init()
 }
 
 // Called every frame
+//もちろんTickも呼ばれない
 void ALevelManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (m_isLoadingLevel)return;
-
+	if (m_streamableHandle == nullptr)return;
+	m_drawer->SetProgress(m_streamableHandle->GetProgress());
 }
 
 

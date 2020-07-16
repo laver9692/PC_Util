@@ -8,12 +8,14 @@ ULevelTransitionDrawer::ULevelTransitionDrawer(const class FObjectInitializer& O
 
 }
 void ULevelTransitionDrawer::NativeConstruct() {
-	levelManager = ALevelManager::GetInstance();
+	Super::NativeConstruct();
+	SetWidgets();
 }
 
 void ULevelTransitionDrawer::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	if (m_isFading) {
+		if (m_fadeImage == nullptr)return;
 		auto color = m_fadeImage->ColorAndOpacity;
 		float a = color.A + m_fadeTime * InDeltaTime;
 		color.A = a;
@@ -43,14 +45,22 @@ void ULevelTransitionDrawer::FadeIn(float fadeTime)
 
 void ULevelTransitionDrawer::FadeOut(float fadeTime)
 {
-	m_fadeTime = -fadeTime;
+	//なぜかThisがNullになることがあるらしい
+	m_fadeTime = fadeTime;
 	m_isFading = true;
 	//Imageの色の初期化と、有効化
 	//ProgressBarのProgressの初期化とm_isLoadingの有効化
+	m_progressBar->SetPercent(0);
+	m_isLoading = true;
+}
+
+void ULevelTransitionDrawer::SetWidgets_Implementation()
+{
 }
 
 void ULevelTransitionDrawer::SetProgress(float progress)
 {
+	if (m_progressBar == nullptr)return;
 	m_progressBar->SetPercent(progress);
 }
 
