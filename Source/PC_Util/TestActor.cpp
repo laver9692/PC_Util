@@ -29,13 +29,13 @@ void ATestActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	auto pCon = UGameplayStatics::GetPlayerController(this, 0);
 	if (pCon->IsInputKeyDown(EKeys::One)) {
-		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA);
+		ULevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelA);
 	}
 	else if (pCon->IsInputKeyDown(EKeys::Two)) {
-		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB);
+		ULevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelB);
 	}
 	else if (pCon->IsInputKeyDown(EKeys::Three)) {
-		ALevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC);
+		ULevelManager::GetInstance()->ChangeLevel(this, ELevelType::LevelC);
 	}
 }
 

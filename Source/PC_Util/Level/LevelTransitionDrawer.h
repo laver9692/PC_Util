@@ -57,6 +57,8 @@ protected:
 
 	void OnFadedOut();
 
+	void SetColor(float r = -1, float g = -1, float b = -1, float a = -1);
+
 	bool m_isFading = false;
 	bool m_isLoading = false;
 

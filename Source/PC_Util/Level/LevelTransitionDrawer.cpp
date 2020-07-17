@@ -36,6 +36,15 @@ void ULevelTransitionDrawer::NativeTick(const FGeometry& MyGeometry, float InDel
 	}
 }
 
+void ULevelTransitionDrawer::SetColor(float r, float g, float b, float a) {
+	auto color = m_fadeImage->ColorAndOpacity;
+	if (0 <= r)color.R = r;
+	if (0 <= g)color.G = g;
+	if (0 <= b)color.B = b;
+	if (0 <= a)color.A = a;
+	m_fadeImage->SetColorAndOpacity(color);
+}
+
 void ULevelTransitionDrawer::FadeIn(float fadeTime)
 {
 	m_fadeTime = -fadeTime;
@@ -45,6 +54,8 @@ void ULevelTransitionDrawer::FadeIn(float fadeTime)
 
 void ULevelTransitionDrawer::FadeOut(float fadeTime)
 {
+	SetColor(-1, -1, -1, 0);
+	AddToViewport(INT32_MAX);
 	//‚È‚º‚©This‚ªNull‚É‚È‚é‚±‚Æ‚ª‚ ‚é‚ç‚µ‚¢
 	m_fadeTime = fadeTime;
 	m_isFading = true;
@@ -69,6 +80,7 @@ void ULevelTransitionDrawer::OnFadedIn()
 	//Image‚ÌActive‚ğØ‚é
 	m_isFading = false;
 	onFadedIn.Broadcast();
+	RemoveFromViewport();
 }
 
 void ULevelTransitionDrawer::OnFadedOut()

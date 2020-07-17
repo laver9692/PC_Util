@@ -21,8 +21,9 @@ DECLARE_MULTICAST_DELEGATE_OneParam(LevelEvent, FName);
 /// <summary>
 /// Level‚Ì‘JˆÚ—p
 /// </summary>
+
 UCLASS()
-class PC_UTIL_API ALevelManager : public AActor
+class PC_UTIL_API ULevelManager : public UObject
 {
 	GENERATED_BODY()
 
@@ -31,10 +32,10 @@ class PC_UTIL_API ALevelManager : public AActor
 	static const TMap<ELevelType, FName> LevelNamesMap;
 
 private:
-	ALevelManager();
-	~ALevelManager();
+	ULevelManager();
+	~ULevelManager();
 protected:
-	static ALevelManager* m_instance;
+	static ULevelManager* m_instance;
 public:
 	// Sets default values for this actor's properties
 
@@ -89,11 +90,11 @@ public:
 		if (m_streamableHandle)return m_streamableHandle->GetProgress();
 		return 0;
 	}
-	static ALevelManager* GetInstance();
+	static ULevelManager* GetInstance();
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
 
 	void OnFadedIn();
 	void OnFadedOut();
@@ -136,14 +137,15 @@ protected:
 
 	bool m_isInit = false;
 	UPROPERTY()
-		class ULevelTransitionDrawer* m_drawer;
-	TSubclassOf<class ULevelTransitionDrawer>WidgetClass = nullptr;
+		class ULevelTransitionDrawer* m_drawer = nullptr;
+	//TSubclassOf<class ULevelTransitionDrawer>WidgetClass = nullptr;
 	//UAsyncActionLoadPrimaryAsset* m_loadingAsset;
 	FStreamableHandle* m_streamableHandle;
 	FStreamableDelegate m_onLevelLoadedDelegate;
 	UObject* targetPtr = nullptr;
 public:
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	//virtual void Tick(float DeltaTime) override;
 
 };
+
