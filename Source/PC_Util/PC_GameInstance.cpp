@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 
 UPC_GameInstance* UPC_GameInstance::m_instance = nullptr;
+
 UPC_GameInstance* UPC_GameInstance::GetInstance() {
 	return m_instance;
 }
@@ -34,15 +35,13 @@ FString GetText(const FString& text) {
 void UPC_GameInstance::OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld)
 {
 	Log(1, GetText("OnWorldChanged"));
+	InitLevelDrawer();
 }
 
 void UPC_GameInstance::Init()
 {
 	m_instance = this;
-	auto widgetName = FName("LevelTransitionDrawer");
-	m_levelTransitionDrawer = CreateWidget<ULevelTransitionDrawer>(this, WidgetClass, widgetName);
-	m_levelTransitionDrawer->SetWidgets();
-
+	if (m_levelTransitionDrawer == nullptr)InitLevelDrawer();
 	m_levelManager = ULevelManager::GetInstance();
 	Log(2, GetText("Init"));
 }
@@ -50,6 +49,14 @@ void UPC_GameInstance::Init()
 void UPC_GameInstance::StartGameInstance()
 {
 	Log(3, GetText("StartGameInstance"));
+}
+
+void UPC_GameInstance::InitLevelDrawer()
+{
+	auto widgetName = FName("LevelTransitionDrawer");
+
+	m_levelTransitionDrawer = CreateWidget<ULevelTransitionDrawer>(this, WidgetClass, widgetName);
+	m_levelTransitionDrawer->SetWidgets();
 }
 
 void UPC_GameInstance::OnStart()

@@ -21,6 +21,7 @@ class PC_UTIL_API ULevelTransitionDrawer : public UUserWidget
 public:
 	//FadeOut->FadedOut(Event)->LoadLevel->UpdateProgress->LoadedLevel(Event)->OpenLevel->ChengedLevel->FadeIn->FadedIn(Event)
 	ULevelTransitionDrawer(const class FObjectInitializer& ObjectInitializer);
+	~ULevelTransitionDrawer();
 	virtual void NativeConstruct() override;
 
 	UFUNCTION(BlueprintCallable)

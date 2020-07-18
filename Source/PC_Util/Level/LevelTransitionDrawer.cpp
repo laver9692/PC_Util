@@ -7,6 +7,11 @@
 ULevelTransitionDrawer::ULevelTransitionDrawer(const class FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer) {
 
 }
+ULevelTransitionDrawer::~ULevelTransitionDrawer()
+{
+	onFadedIn.RemoveAll(this);
+	onFadedOut.RemoveAll(this);
+}
 void ULevelTransitionDrawer::NativeConstruct() {
 	Super::NativeConstruct();
 	SetWidgets();

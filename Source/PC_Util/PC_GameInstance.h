@@ -28,6 +28,7 @@ public:
 	class ULevelTransitionDrawer* GetLevelTransitionDrawer() { return m_levelTransitionDrawer; }
 protected:
 	static UPC_GameInstance* m_instance;
+	void InitLevelDrawer();
 
 	class ULevelManager* m_levelManager = nullptr;
 	class ULevelTransitionDrawer* m_levelTransitionDrawer = nullptr;

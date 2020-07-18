@@ -40,6 +40,7 @@ ULevelManager::ULevelManager()
 ULevelManager::~ULevelManager()
 {
 	if (m_instance == this)m_instance = nullptr;
+	m_drawer = nullptr;
 }
 
 void ULevelManager::ChangeLevel(const FName levelName)
@@ -172,8 +173,10 @@ void ULevelManager::Init()
 	if (m_drawer == nullptr) {
 		m_drawer = UPC_GameInstance::GetInstance()->GetLevelTransitionDrawer();
 		if (m_drawer != nullptr) {
-			m_drawer->onFadedIn.AddLambda([&] { OnFadedIn(); });
-			m_drawer->onFadedOut.AddLambda([&] { OnFadedOut(); });
+			//if (!m_drawer->onFadedIn.IsBound())onFadedIn = FadeEvent();
+			//if (!m_drawer->onFadedOut.IsBound())onFadedOut = FadeEvent();
+			m_drawer->onFadedIn.AddLambda([this] { OnFadedIn(); });
+			m_drawer->onFadedOut.AddLambda([this] { OnFadedOut(); });
 		}
 	}
 	m_isInit = true;
